@@ -111,7 +111,7 @@ def train_cnn_model(model, train_loader, test_loader, epochs_num=10, testing=Fal
     for epoch in range(epochs_num):
         current_loss = 0.0 #to keep track of the model loss
 
-        for i, data in enumerate(train_loader, 0):
+        for i, data in enumerate(train_loader):
             #inputs, labels = Variable(data['image'].to(device)), Variable(data['target'].to(device))
             inputs, labels = Variable(data['image']), Variable(data['target'])
             
