@@ -68,7 +68,7 @@ class ActivationFunction:
             leaky relu activation function and its derivative 
         '''
         if not derivative:
-            return np.where(x > 0, x, self.lr * x)
+            return np.where(x > 0, x, self.lr*x)
         else:
             return np.where(x > 0, 1, self.lr)
     
@@ -129,8 +129,6 @@ class NeuralNetwork:
 
         self.z2 = np.dot(self.a1, self.weights[1]) + self.bias[1]
         self.a2 = self.activation.calculate(self.z2)
-        #print(np.dot(self.a1, self.weights[1])[0][0], self.bias[1][0][0])
-        #print(self.z2[0][0])
 
         self.outputs = np.zeros((len(self.a2), self.output_size))
         for i in range(len(self.a2)):
@@ -155,13 +153,8 @@ class NeuralNetwork:
         self.accuracy = np.sum(np.argmax(self.outputs, axis=1) == y) / len(y)
 
         #calculate the error of the hidden layer
-        #self.e1 = self.a2 - y_mtrix
         self.e1 = self.outputs - y_mtrix
         dw1 = self.e1 * self.activation.calculate(self.a2, True)
-        #print(self.a2[0][0])
-        #print(self.activation.calculate(self.a2, True)[0])
-        #print(dw1[0][0])
-        #print(self.weights[1][0][0])
         
         #calculate the error of the input layer
         self.e2 = np.dot(dw1, self.weights[1].T)
@@ -170,35 +163,47 @@ class NeuralNetwork:
         #update the weights
         w2_update = np.dot(self.a1.T, dw1) / len(X)
         w1_update = np.dot(X.T, dw2) / len(X)
-        #print(w1_update[0][0])
 
         #update the biases
         b2_update = self.lr * np.sum(dw1, axis=0, keepdims=True) / len(X)
         b1_update = self.lr * np.sum(dw2, axis=0, keepdims=True) / len(X) 
 
+        return (w2_update, w1_update, b2_update, b1_update)
+
+        
+
+    def update_weights(self, w2_update, w1_update, b2_update, b1_update):
+        '''
+            update the weights and biases of the network
+        '''
         self.weights[1] -= self.lr * w2_update
         self.weights[0] -= self.lr * w1_update
 
         self.bias[1] -= self.lr * b2_update
         self.bias[0] -= self.lr * b1_update
-
-        #print(self.weights[0])
-
         
-    def TRAIN(self, X, y, epochs=5, testing=False):
+    def TRAIN(self, X, y, epochs=5, batch_num=5, testing=False):
         '''
             train the network for a given number of epochs
         '''
+        weights = []
         for epoch in range(epochs):
-            X_sample, y_sample = MiniBatchGD(X, y, batch_size=self.batch_size).sample()
-            #print(f'Before forward pass: {self.weights[0][0][0]}')
-            self.forward_pass(X_sample)
-            #print(f'Before forward pass: {self.weights[0][0][0]}')
-            self.backward_pass(X_sample, y_sample)
-            #print(f'After backward pass: {self.weights[0][0][0]}')
+            for x in range(batch_num):
+                X_sample, y_sample = MiniBatchGD(X, y, batch_size=self.batch_size).sample()
+                self.forward_pass(X_sample)
+                w2_update, w1_update, b2_update, b1_update = self.backward_pass(X_sample, y_sample)
+
+                weights.append((w2_update, w1_update, b2_update, b1_update))
+            
+            av_w2_update = np.average([w[0] for w in weights], axis=0)
+            av_w1_update = np.average([w[1] for w in weights], axis=0)
+            av_b2_update = np.average([w[2] for w in weights], axis=0)
+            av_b1_update = np.average([w[3] for w in weights], axis=0)
+            
+            self.update_weights(av_w2_update, av_w1_update, av_b2_update, av_b1_update)
+
             if testing: print(f'Epoch {epoch}, loss: {self.loss}, accuracy: {self.accuracy}')
         
-        #if not testing: 
         return (self.accuracy, self.lr, self.activation.name, self.batch_size)
 
     def TEST(self, X, y):
@@ -207,21 +212,23 @@ class NeuralNetwork:
         '''
         self.forward_pass(X)
         self.backward_pass(X, y)
-        #print(f'loss: {self.loss}, accuracy: {self.accuracy}')
+        print(f'loss: {self.loss}, accuracy: {self.accuracy}')
     
 
 if __name__ == '__main__':
     LEARNING_RATE = 0.01
-    EPOCHS = 200
+    EPOCHS = 100
+    BATCH_SIZE = 128
+    BATCH_NUM = 5
 
     #load the data
     X_train, y_train, X_test, y_test = load_data()
 
     #create the network
-    nn = NeuralNetwork(activation_name='leaky_relu', learning_rate=LEARNING_RATE)
+    nn = NeuralNetwork(activation_name='sigmoid', learning_rate=LEARNING_RATE, batch_size=BATCH_SIZE)
 
     #train the network
-    nn.TRAIN(X_train, y_train, epochs=EPOCHS, testing=True)
+    nn.TRAIN(X_train, y_train, epochs=EPOCHS, batch_num=BATCH_NUM ,testing=True)
 
     #test the network
     nn.TEST(X_test, y_test)

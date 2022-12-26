@@ -1,3 +1,7 @@
+'''
+This is our ¨reference implementation" for the CNN model.
+'''
+
 import numpy as np
 
 #pytorch imports
