@@ -187,6 +187,7 @@ class NeuralNetwork:
             train the network for a given number of epochs
         '''
         weights = []
+        l= list()
         for epoch in range(epochs):
             for x in range(batch_num):
                 X_sample, y_sample = MiniBatchGD(X, y, batch_size=self.batch_size).sample()
@@ -202,7 +203,13 @@ class NeuralNetwork:
             
             self.update_weights(av_w2_update, av_w1_update, av_b2_update, av_b1_update)
 
-            if testing: print(f'Epoch {epoch}, loss: {self.loss}, accuracy: {self.accuracy}')
+            if testing: 
+                print(f'Epoch {epoch}, loss: {self.loss}, accuracy: {self.accuracy}')
+                l.append([epoch, self.accuracy,self.loss])
+
+        
+        if testing: 
+            return pd.DataFrame(data= l, columns=['epoch', 'accuracy', 'loss'])
         
         return (self.accuracy, self.lr, self.activation.name, self.batch_size)
 
