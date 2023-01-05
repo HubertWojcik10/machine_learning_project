@@ -222,6 +222,15 @@ class NeuralNetwork:
         self.backward_pass(X, y)
         print(f'loss: {self.loss}, accuracy: {self.accuracy}')
     
+    
+    def predict(self, X, y):
+        '''
+            test the network
+        '''
+        self.forward_pass(X)
+        self.backward_pass(X, y)
+        self.class_chosen = np.argmax(self.outputs, axis=1)
+        return self.class_chosen
 
 if __name__ == '__main__':
     LEARNING_RATE = 0.01
