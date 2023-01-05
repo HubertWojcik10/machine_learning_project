@@ -28,7 +28,7 @@ class ActivationFunction:
         A class used to define and calculate the activation function used in the network. 
         It enables us to easily change the activation function used in the network.
     '''
-    def __init__(self, name, lr=0.1):
+    def __init__(self, name, lr=0.01):
         self.name = name
         self.lr = lr
 
@@ -98,13 +98,13 @@ class NeuralNetwork:
     '''
         Our main class used to define the Neural Network model
     '''
-    def __init__(self, input_size=784, hidden_size=300, output_size=5, layers_num=3, learning_rate=0.01, test=False, batch_size=64, activation_name='sigmoid'):
+    def __init__(self, input_size=784, hidden_size=300, output_size=5, layers_num=3, learning_rate=0.01, test=False, batch_size=64, activation_name='sigmoid', activation_function_lr=0.1):
         self.input_size = input_size
         self.output_size = output_size
         self.hidden_size = hidden_size 
         self.layers_num = layers_num
         self.lr = learning_rate
-        self.activation = ActivationFunction(activation_name, lr=learning_rate)
+        self.activation = ActivationFunction(activation_name, lr=activation_function_lr)
         self.batch_size = batch_size
 
         self.weights = []
@@ -204,7 +204,8 @@ class NeuralNetwork:
             self.update_weights(av_w2_update, av_w1_update, av_b2_update, av_b1_update)
 
             if testing: 
-                print(f'Epoch {epoch}, loss: {self.loss}, accuracy: {self.accuracy}')
+                if epoch % 20 == 0 or epoch == 99:
+                    print(f'Epoch {epoch}, loss: {self.loss}, accuracy: {self.accuracy}')
                 l.append([epoch, self.accuracy,self.loss])
 
         
