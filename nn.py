@@ -225,7 +225,7 @@ class NeuralNetwork:
     
     def predict(self, X, y):
         '''
-            test the network
+            predict the class of the given data
         '''
         self.forward_pass(X)
         self.backward_pass(X, y)
